@@ -3,11 +3,17 @@
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 from logHandler import log
+from typing import Any
 
-from .client import RemoteClient
 from .configuration import getRemoteConfig
 
-_remoteClient: RemoteClient = None
+_remoteClient: Any | None = None
+
+
+def _getRemoteClientClass() -> type[Any]:
+	from .client import RemoteClient
+
+	return RemoteClient
 
 
 def initialize():
@@ -15,6 +21,11 @@ def initialize():
 	global _remoteClient
 	if not getRemoteConfig()["enabled"]:
 		log.debug("Remote Access disabled. Not initializing.")
+		return
+	try:
+		RemoteClient = _getRemoteClientClass()
+	except (AttributeError, ImportError, OSError):
+		log.warning("Remote Access unavailable.")
 		return
 	import globalCommands
 

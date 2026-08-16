@@ -5,6 +5,7 @@
 
 import unittest
 from unittest.mock import MagicMock, patch
+import _remoteClient
 import _remoteClient.client as rcClient
 from _remoteClient.connectionInfo import ConnectionInfo, ConnectionMode
 from _remoteClient.protocol import RemoteMessageType
@@ -355,6 +356,24 @@ class TestRemoteClient(unittest.TestCase):
 		self.client.followerTransport = fakeTransport
 		onConnectAsFollowerFailed(self.client)
 		self.uiDelayedMessage.assert_called_once()
+
+
+class TestRemoteInitialization(unittest.TestCase):
+	def setUp(self):
+		self.remoteClientPatcher = patch.object(_remoteClient, "_remoteClient", None)
+		self.remoteClientPatcher.start()
+		self.addCleanup(self.remoteClientPatcher.stop)
+
+	def test_importError_marksRemoteAccessUnavailable(self):
+		with (
+			patch.object(_remoteClient, "getRemoteConfig", return_value={"enabled": True}),
+			patch.object(_remoteClient, "_getRemoteClientClass", side_effect=ImportError),
+			patch.object(_remoteClient.log, "warning") as logWarning,
+		):
+			_remoteClient.initialize()
+
+		logWarning.assert_called_once_with("Remote Access unavailable.")
+		self.assertIsNone(_remoteClient._remoteClient)
 
 
 if __name__ == "__main__":

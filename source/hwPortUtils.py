@@ -186,6 +186,8 @@ def listComPorts(onlyAvailable: bool = True) -> typing.Iterator[dict]:
 
 
 def getBluetoothDeviceInfo(address):
+	if _BluetoothGetDeviceInfo is None:
+		raise OSError("Bluetooth support is not available")
 	devInfo = _BLUETOOTH_DEVICE_INFO(address=address)
 	res = _BluetoothGetDeviceInfo(None, ctypes.byref(devInfo))
 	if res != 0:

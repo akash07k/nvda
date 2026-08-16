@@ -9,7 +9,7 @@ Contains the command functions and their logic for keyboard shortcuts.
 """
 
 from collections.abc import Callable
-from typing import Literal
+from typing import Any, Literal, cast
 import speech
 import ui
 from . import changeMagnifiedView, getMagnifier, start, stop
@@ -24,7 +24,6 @@ from .config import (
 	_isDebug,
 )
 from .magnifier import Magnifier
-from .fullscreenMagnifier import FullScreenMagnifier
 from .utils.errorHandling import MagnifierStartError
 from .utils.types import (
 	Filter,
@@ -182,8 +181,7 @@ def toggleFilter() -> None:
 		idx = filters.index(magnifier.filterType)
 		magnifier.filterType = filters[(idx + 1) % len(filters)]
 		if magnifier._MAGNIFIED_VIEW == MagnifiedView.FULLSCREEN:
-			assert isinstance(magnifier, FullScreenMagnifier)
-			fullscreenMagnifier: FullScreenMagnifier = magnifier
+			fullscreenMagnifier = cast(Any, magnifier)
 			fullscreenMagnifier._applyFilter()
 		setFilter(magnifier.filterType)
 
@@ -290,7 +288,7 @@ def toggleFullscreenMode() -> None:
 			magnifier,
 			MagnifierAction.CHANGE_FULLSCREEN_MODE,
 		):
-			fullscreenMagnifier: FullScreenMagnifier = magnifier
+			fullscreenMagnifier = cast(Any, magnifier)
 			modes = list(FullScreenMode)
 			currentMode = fullscreenMagnifier._fullscreenMode
 			idx = modes.index(currentMode)
@@ -309,7 +307,7 @@ def toggleFullscreenMode() -> None:
 
 def startSpotlight() -> None:
 	"""Start spotlight mode in full-screen magnifier"""
-	magnifier: FullScreenMagnifier = getMagnifier()
+	magnifier: Magnifier | None = getMagnifier()
 	if magnifierIsActiveVerify(
 		magnifier,
 		MagnifierAction.START_SPOTLIGHT,
@@ -318,7 +316,7 @@ def startSpotlight() -> None:
 			magnifier,
 			MagnifierAction.START_SPOTLIGHT,
 		):
-			fullscreenMagnifier: FullScreenMagnifier = magnifier
+			fullscreenMagnifier = cast(Any, magnifier)
 			if _isDebug():
 				log.debug("trying to launch spotlight mode")
 			if fullscreenMagnifier._spotlightManager._spotlightIsActive:

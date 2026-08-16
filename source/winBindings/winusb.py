@@ -18,7 +18,10 @@ from ctypes.wintypes import BOOL, HANDLE, PULONG, ULONG, USHORT
 from enum import IntEnum
 from serial.win32 import LPOVERLAPPED
 
-dll = windll.winusb
+try:
+	dll = windll.winusb
+except AttributeError as e:
+	raise OSError("winusb.dll is not available") from e
 
 WINUSB_INTERFACE_HANDLE = c_void_p
 PWINUSB_INTERFACE_HANDLE = POINTER(c_void_p)

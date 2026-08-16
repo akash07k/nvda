@@ -24,6 +24,7 @@ from typing import (
 	List,
 	Optional,
 	Set,
+	cast,
 )
 
 import audio
@@ -44,8 +45,7 @@ import logHandler
 from _magnifier import getMagnifier
 from _magnifier.commands import toggleMagnifier
 import _magnifier.config as magnifierConfig
-from _magnifier.utils.types import Filter, FullScreenMode, MagnifierTrackingType
-from _magnifier.fullscreenMagnifier import FullScreenMagnifier
+from _magnifier.utils.types import Filter, FullScreenMode, MagnifiedView, MagnifierTrackingType
 import queueHandler
 import requests
 import speech
@@ -6165,8 +6165,8 @@ class MagnifierPanel(SettingsPanel):
 			magnifier.zoomLevel = roundedZoom
 			magnifier._panStep = selectedPanStep
 			magnifier.filterType = selectedFilter
-			if isinstance(magnifier, FullScreenMagnifier):
-				magnifier._fullscreenMode = selectedMode
+			if magnifier._MAGNIFIED_VIEW == MagnifiedView.FULLSCREEN:
+				cast(Any, magnifier)._fullscreenMode = selectedMode
 
 	def _onImmediateSettingChange(self, evt: wx.CommandEvent):
 		"""Handle immediate updates for non-enable magnifier settings."""
@@ -6352,8 +6352,8 @@ class MagnifierPanel(SettingsPanel):
 			magnifier.zoomLevel = self._zoomInitially
 			magnifier._panStep = self._panStepInitially
 			magnifier.filterType = self._filterInitially
-			if isinstance(magnifier, FullScreenMagnifier):
-				magnifier._fullscreenMode = self._trackingModeInitially
+			if magnifier._MAGNIFIED_VIEW == MagnifiedView.FULLSCREEN:
+				cast(Any, magnifier)._fullscreenMode = self._trackingModeInitially
 
 		if self._magnifierEnabledInitially != magnifierConfig.getEnabled():
 			toggleMagnifier()

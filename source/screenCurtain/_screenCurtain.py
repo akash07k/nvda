@@ -4,7 +4,7 @@
 # For full terms and any additional permissions, see the NVDA license file: https://github.com/nvaccess/nvda/blob/master/copying.txt
 
 import os
-from typing import Final, TypedDict, cast
+from typing import Any, Final, TypedDict, cast
 
 import config
 import globalVars
@@ -17,13 +17,23 @@ from gui.nvdaControls import MessageDialog
 from logHandler import log
 from NVDAHelper.localLib import isScreenFullyBlack
 from NVDAState import _TrackNVDAInitialization
-from winBindings import magnification
+try:
+	from winBindings import magnification
+except (AttributeError, OSError):
+	# Windows PE may omit the Magnification API.
+	magnification: Any | None = None
+else:
+	if not magnification.isAvailable:
+		magnification = None
 
 # homogeneous matrix for a 4-space transformation (red, green, blue, opacity).
 # https://docs.microsoft.com/en-gb/windows/win32/gdiplus/-gdiplus-using-a-color-matrix-to-transform-a-single-color-use
-TRANSFORM_BLACK = magnification.MAGCOLOREFFECT()  # empty transformation
-TRANSFORM_BLACK.transform[4][4] = 1.0  # retain as an affine transformation
-TRANSFORM_BLACK.transform[3][3] = 1.0  # retain opacity, while scaling other colours to zero (#12491)
+if magnification is not None:
+	TRANSFORM_BLACK = magnification.MAGCOLOREFFECT()  # empty transformation
+	TRANSFORM_BLACK.transform[4][4] = 1.0  # retain as an affine transformation
+	TRANSFORM_BLACK.transform[3][3] = 1.0  # retain opacity, while scaling other colours to zero (#12491)
+else:
+	TRANSFORM_BLACK = None
 
 # Translators: Description for a Screen Curtain setting that shows a warning when enabling
 # the screen curtain.
@@ -199,6 +209,8 @@ class ScreenCurtain:
 		if self._enabled:
 			log.debug("ScreenCurtain is already enabled.")
 			return
+		if magnification is None:
+			raise RuntimeError("The Magnification API is not available")
 
 		# Notify magnifier that screen curtain is being enabled
 		import _magnifier
@@ -247,6 +259,8 @@ class ScreenCurtain:
 		if not self._enabled:
 			log.debug("ScreenCurtain is already disabled")
 			return
+		if magnification is None:
+			raise RuntimeError("The Magnification API is not available")
 		log.debug("Disabling ScreenCurtain")
 		magnification.MagShowSystemCursor(True)
 		magnification.MagUninitialize()

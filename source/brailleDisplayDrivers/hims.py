@@ -30,19 +30,24 @@ from winBindings.setupapi import (
 	SetupDiGetDeviceInterfaceDetail,
 	_Dummy as _SP_DEVICE_INTERFACE_DETAIL_DATA_PACKING,
 )
-from winBindings.winusb import (
-	USB_INTERFACE_DESCRIPTOR,
-	USBD_PIPE_TYPE,
-	WINUSB_PIPE_POLICY,
-	WINUSB_PIPE_INFORMATION,
-	WinUsb_Free,
-	WinUsb_Initialize,
-	WinUsb_QueryInterfaceSettings,
-	WinUsb_QueryPipe,
-	WinUsb_ReadPipe,
-	WinUsb_SetPipePolicy,
-	WinUsb_WritePipe,
-)
+try:
+	from winBindings.winusb import (
+		USB_INTERFACE_DESCRIPTOR,
+		USBD_PIPE_TYPE,
+		WINUSB_PIPE_POLICY,
+		WINUSB_PIPE_INFORMATION,
+		WinUsb_Free,
+		WinUsb_Initialize,
+		WinUsb_QueryInterfaceSettings,
+		WinUsb_QueryPipe,
+		WinUsb_ReadPipe,
+		WinUsb_SetPipePolicy,
+		WinUsb_WritePipe,
+	)
+except OSError:
+	_winUsbAvailable = False
+else:
+	_winUsbAvailable = True
 import braille
 import braille.display
 import braille.display.driver
@@ -635,6 +640,8 @@ class BrailleDisplayDriver(braille.display.driver.BrailleDisplayDriver):
 							# available -- e.g. Windows 11 blocks installation of unsigned/non-WHCP
 							# kernel drivers. Fall back to WinUSB (winusb.sys, an inbox driver) if
 							# the vendor's WinUSB INF (hims_winusb.inf) is installed for this device.
+							if not _winUsbAvailable:
+								raise bulkError
 							log.debug(
 								f"hwIo.Bulk(port={port!r}) failed ({bulkError}); trying WinUSB fallback",
 							)

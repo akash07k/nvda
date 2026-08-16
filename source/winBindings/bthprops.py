@@ -16,7 +16,11 @@ from ctypes.wintypes import BOOL, DWORD, HANDLE, ULONG, WCHAR
 
 from winBindings.kernel32 import SYSTEMTIME
 
-cpl = windll["bthprops.cpl"]
+try:
+	_cpl = windll["bthprops.cpl"]
+except (AttributeError, OSError):
+	# Windows PE may omit Bluetooth support entirely.
+	_cpl = None
 
 BLUETOOTH_ADDRESS = c_ulonglong
 BLUETOOTH_MAX_NAME_SIZE = 248
@@ -49,15 +53,19 @@ class BLUETOOTH_DEVICE_INFO(Structure):
 BLUETOOTH_DEVICE_INFO_P = POINTER(BLUETOOTH_DEVICE_INFO)
 
 
-BluetoothGetDeviceInfo = cpl.BluetoothGetDeviceInfo
+if _cpl is not None:
+	BluetoothGetDeviceInfo = _cpl.BluetoothGetDeviceInfo
+else:
+	BluetoothGetDeviceInfo = None
 """
 Retrieves information about a remote Bluetooth device which has been identified through a successful device inquiry function call.
 
 ..seealso::
 	https://learn.microsoft.com/en-us/windows/win32/api/bluetoothapis/nf-bluetoothapis-bluetoothgetdeviceinfo
 """
-BluetoothGetDeviceInfo.argtypes = (
-	HANDLE,  # hRadio
-	BLUETOOTH_DEVICE_INFO_P,  # pbtdi
-)
-BluetoothGetDeviceInfo.restype = DWORD
+if BluetoothGetDeviceInfo is not None:
+	BluetoothGetDeviceInfo.argtypes = (
+		HANDLE,  # hRadio
+		BLUETOOTH_DEVICE_INFO_P,  # pbtdi
+	)
+	BluetoothGetDeviceInfo.restype = DWORD

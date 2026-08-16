@@ -110,9 +110,9 @@ def terminate() -> None:
 def initialize() -> None:
 	# Register builtin providers if a plugin hasn't registered others.
 	if not speechProvider or not brailleProvider or not interactionProvider:
-		from .MathCAT import MathCAT
-
 		try:
+			from .MathCAT import MathCAT
+
 			provider = MathCAT.MathCAT()
 		except:  # noqa: E722
 			log.warning("MathCAT not available.")

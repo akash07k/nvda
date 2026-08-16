@@ -10,7 +10,12 @@ from ctypes.wintypes import BOOL, LPRECT
 from _ctypes import CFuncPtr
 from typing import Any
 
-dll = windll.Magnification
+try:
+	dll = windll.Magnification
+except (AttributeError, OSError):
+	dll = None
+
+isAvailable = dll is not None
 
 
 class MAGCOLOREFFECT(Structure):
@@ -33,80 +38,51 @@ def _errCheck[T: tuple[Any]](result: int, func: CFuncPtr, args: T) -> T:
 	return args
 
 
-MagSetFullscreenColorEffect = WINFUNCTYPE(BOOL, PMAGCOLOREFFECT)(
-	("MagSetFullscreenColorEffect", dll),
-	((1, "pEffect"),),
-)
-"""
-Changes the color transformation matrix associated with the full-screen magnifier.
+if isAvailable:
+	MagSetFullscreenColorEffect = WINFUNCTYPE(BOOL, PMAGCOLOREFFECT)(
+		("MagSetFullscreenColorEffect", dll),
+		((1, "pEffect"),),
+	)
+	MagSetFullscreenColorEffect.errcheck = _errCheck
 
-.. seealso::
-	https://learn.microsoft.com/en-us/windows/win32/api/magnification/nf-magnification-magsetfullscreencoloreffect
-"""
-MagSetFullscreenColorEffect.errcheck = _errCheck
+	MagGetFullscreenColorEffect = WINFUNCTYPE(BOOL, PMAGCOLOREFFECT)(
+		("MagGetFullscreenColorEffect", dll),
+		((2, "effect"),),
+	)
+	MagGetFullscreenColorEffect.errcheck = _errCheck
 
-MagGetFullscreenColorEffect = WINFUNCTYPE(BOOL, PMAGCOLOREFFECT)(
-	("MagGetFullscreenColorEffect", dll),
-	((2, "effect"),),
-)
-"""
-Retrieves the color transformation matrix associated with the full-screen magnifier.
+	MagShowSystemCursor = WINFUNCTYPE(BOOL, BOOL)(
+		("MagShowSystemCursor", dll),
+		((1, "showCursor"),),
+	)
+	MagShowSystemCursor.errcheck = _errCheck
 
-.. seealso::
-	https://learn.microsoft.com/en-us/windows/win32/api/magnification/nf-magnification-maggetfullscreencoloreffect
-"""
-MagGetFullscreenColorEffect.errcheck = _errCheck
+	MagInitialize = WINFUNCTYPE(BOOL)(("MagInitialize", dll))
+	MagInitialize.errcheck = _errCheck
 
-MagShowSystemCursor = WINFUNCTYPE(BOOL, BOOL)(
-	("MagShowSystemCursor", dll),
-	((1, "showCursor"),),
-)
-"""
-Shows or hides the system cursor.
+	MagUninitialize = WINFUNCTYPE(BOOL)(("MagUninitialize", dll))
+	MagUninitialize.errcheck = _errCheck
 
-.. seealso::
-	https://learn.microsoft.com/en-us/windows/win32/api/magnification/nf-magnification-magshowsystemcursor
-"""
-MagShowSystemCursor.errcheck = _errCheck
+	MagSetFullscreenTransform = WINFUNCTYPE(BOOL, c_float, c_int, c_int)(
+		("MagSetFullscreenTransform", dll),
+		((1, "magLevel"), (1, "xOffset"), (1, "yOffset")),
+	)
+	MagSetFullscreenTransform.errcheck = _errCheck
 
-MagInitialize = WINFUNCTYPE(BOOL)(("MagInitialize", dll))
-"""
-Creates and initializes the magnifier run-time objects.
+	MagSetInputTransform = WINFUNCTYPE(BOOL, BOOL, LPRECT, LPRECT)(
+		("MagSetInputTransform", dll),
+		((1, "fEnabled"), (1, "pRectSource"), (1, "pRectDest")),
+	)
+	MagSetInputTransform.errcheck = _errCheck
+else:
 
-.. seealso::
-	https://learn.microsoft.com/en-us/windows/win32/api/magnification/nf-magnification-maginitialize
-"""
-MagInitialize.errcheck = _errCheck
+	def _unavailable(*args: Any) -> None:
+		raise OSError("The Magnification API is not available")
 
-MagUninitialize = WINFUNCTYPE(BOOL)(("MagUninitialize", dll))
-"""
-Destroys the magnifier run-time objects.
-
-.. seealso::
-	https://learn.microsoft.com/en-us/windows/win32/api/magnification/nf-magnification-maguninitialize
-"""
-MagUninitialize.errcheck = _errCheck
-
-MagSetFullscreenTransform = WINFUNCTYPE(BOOL, c_float, c_int, c_int)(
-	("MagSetFullscreenTransform", dll),
-	((1, "magLevel"), (1, "xOffset"), (1, "yOffset")),
-)
-"""
-Sets the magnification settings for the full-screen magnifier.
-
-.. seealso::
-	https://learn.microsoft.com/en-us/windows/win32/api/magnification/nf-magnification-magsetfullscreentransform
-"""
-MagSetFullscreenTransform.errcheck = _errCheck
-
-MagSetInputTransform = WINFUNCTYPE(BOOL, BOOL, LPRECT, LPRECT)(
-	("MagSetInputTransform", dll),
-	((1, "fEnabled"), (1, "pRectSource"), (1, "pRectDest")),
-)
-"""
-Sets the mapping between magnified coordinates and screen coordinates for pen and touch input.
-
-.. seealso::
-	https://learn.microsoft.com/en-us/windows/win32/api/magnification/nf-magnification-magsetinputtransform
-"""
-MagSetInputTransform.errcheck = _errCheck
+	MagSetFullscreenColorEffect = _unavailable
+	MagGetFullscreenColorEffect = _unavailable
+	MagShowSystemCursor = _unavailable
+	MagInitialize = _unavailable
+	MagUninitialize = _unavailable
+	MagSetFullscreenTransform = _unavailable
+	MagSetInputTransform = _unavailable
