@@ -30,6 +30,7 @@ from typing import (
 from baseObject import AutoPropertyObject
 from logHandler import log
 from NVDAState import _TrackNVDAInitialization
+import winVersion
 
 from ._wtsApi32 import (
 	WTSINFOEXW,
@@ -178,9 +179,8 @@ def _isWindowsLocked_checkViaSessionQuery() -> bool:
 		log.exception("Failure querying session locked state")
 		return False
 	if sessionQueryLockState == WTS_LockState.WTS_SESSIONSTATE_UNKNOWN:
-		log.error(
-			f"Unable to determine lock state via Session Query. Lock state value: {sessionQueryLockState!r}",
-		)
+		logFunc = log.debug if winVersion.isRunningInWinPE() else log.error
+		logFunc(f"Unable to determine lock state via Session Query. Lock state value: {sessionQueryLockState!r}")
 		return False
 	return sessionQueryLockState == WTS_LockState.WTS_SESSIONSTATE_LOCK
 

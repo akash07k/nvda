@@ -6,6 +6,7 @@
 """Unit tests for the Windows version module."""
 
 import unittest
+from unittest import mock
 import sys
 import os
 import winVersion
@@ -102,3 +103,11 @@ class TestWinVersion(unittest.TestCase):
 			build=zincBuild,
 		)
 		self.assertEqual(win11ZincInfo.releaseName, "Windows 11 unknown")
+
+	def test_isRunningInWinPE(self):
+		with mock.patch.object(winVersion.winreg, "OpenKey"):
+			self.assertTrue(winVersion.isRunningInWinPE())
+
+	def test_isRunningInWinPE_outsideWinPE(self):
+		with mock.patch.object(winVersion.winreg, "OpenKey", side_effect=FileNotFoundError):
+			self.assertFalse(winVersion.isRunningInWinPE())

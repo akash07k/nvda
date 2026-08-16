@@ -867,7 +867,7 @@ def initialize() -> None:
 	_remoteLib.initInprocManagerThreadIfNeeded()
 	arch = winVersion.getWinVer().processorArchitecture
 	if arch == "AMD64":
-		if ReadPaths.coreArchLibPath != ReadPaths.versionedLibX86Path:
+		if not winVersion.isRunningInWinPE() and ReadPaths.coreArchLibPath != ReadPaths.versionedLibX86Path:
 			_remoteLoaderX86 = _RemoteLoader(ReadPaths.versionedLibX86Path)
 		if ReadPaths.coreArchLibPath != ReadPaths.versionedLibAMD64Path:
 			_remoteLoaderAMD64 = _RemoteLoader(ReadPaths.versionedLibAMD64Path)

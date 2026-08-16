@@ -216,6 +216,15 @@ def isSupportedOS() -> bool:
 	return getWinVer() >= WIN10
 
 
+def isRunningInWinPE() -> bool:
+	"""Return whether NVDA is running in the Windows PE environment."""
+	try:
+		with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\MiniNT"):
+			return True
+	except OSError:
+		return False
+
+
 UWP_OCR_DATA_PATH = os.path.expandvars(r"$windir\OCR")
 
 
