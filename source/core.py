@@ -351,7 +351,7 @@ def resetConfiguration(factoryDefaults=False):
 	log.debug("terminating tones")
 	tones.terminate()
 	log.debug("terminating sound split")
-	audio.soundSplit.terminate()
+	audio.terminate()
 	log.debug("Terminating background braille display detection")
 	bdDetect.terminate()
 	log.debug("Terminating background i/o")
@@ -384,7 +384,7 @@ def resetConfiguration(factoryDefaults=False):
 	tones.initialize()
 	# Sound split
 	log.debug("initializing sound split")
-	audio.soundSplit.initialize()
+	audio.initialize()
 	# Character processing
 	log.debug("initializing character processing")
 	characterProcessing.initialize()
@@ -681,6 +681,16 @@ def _setUpWxApp() -> "wx.App":
 	return app
 
 
+def _getInitialBrailleMessage() -> str:
+	import screenCurtain
+
+	if screenCurtain.screenCurtain is not None and screenCurtain.screenCurtain.enabled:
+		# Translators: This is shown on a braille display (if one is connected) when NVDA starts with the screen curtain enabled.
+		return _("NVDA started with screen curtain enabled")
+	# Translators: This is shown on a braille display (if one is connected) when NVDA starts.
+	return _("NVDA started")
+
+
 def main():
 	"""NVDA's core main loop.
 	This initializes all modules such as audio, IAccessible, keyboard, mouse, and GUI.
@@ -789,7 +799,7 @@ def main():
 	log.debug("Initializing sound split")
 	import audio
 
-	audio.soundSplit.initialize()
+	audio.initialize()
 	import speechDictHandler
 
 	log.debug("Speech Dictionary processing")
@@ -959,14 +969,8 @@ def main():
 			warnForNonEmptyDirectory=warnForNonEmptyDirectory,
 		)
 	elif not globalVars.appArgs.minimal:
-		if screenCurtain.screenCurtain.enabled:
-			# Translators: This is shown on a braille display (if one is connected) when NVDA starts with the screen curtain enabled.
-			initialMessage = _("NVDA started with screen curtain enabled")
-		else:
-			# Translators: This is shown on a braille display (if one is connected) when NVDA starts.
-			initialMessage = _("NVDA started")
 		try:
-			braille.handler.message(initialMessage)
+			braille.handler.message(_getInitialBrailleMessage())
 		except:  # noqa: E722
 			log.error("", exc_info=True)  # noqa: G201
 		if globalVars.appArgs.launcher:

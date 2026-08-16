@@ -14,6 +14,11 @@
 
 ### Bug Fixes
 
+* NVDA can now start in Windows PE when optional Windows APIs and components are unavailable.
+  Depending on the image contents, affected features can include the Magnifier, Screen Curtain, Remote Access,
+  MathCAT, Bluetooth device identification, the HIMS WinUSB fallback, Sound Split, and audio device enumeration.
+  Sound Split and audio device enumeration are unavailable without `pdh.dll`.
+  Users must still add compatible audio components to their Windows PE image for NVDA audio output. (#19537, @akash07k)
 * The "Start NVDA after I sign in" and "Use NVDA during sign-in" settings: (#20864, @cary-rowen)
   * Fixed an issue that could prevent automatic startup from being enabled on some systems.
   * Saving other settings no longer unexpectedly disables automatic startup.
@@ -78,6 +83,12 @@ A read completing on the same handle no longer ends the wait while the write is 
 Existing handlers which only accept `speechSequence` remain compatible. (#20766, @cary-rowen)
 * `speech.speech.getSpellingSpeech` and `speech.shortcutKeys.shouldUseSpellingFunctionality` now only use spelling functionality if the active synthesizer declares support for `CharacterModeCommand` in its `supportedCommands`. (#20831)
 * `comInterfaces.tom` is now generated from the Text Object Model type library in `msftedit.dll`. (#20987, @LeonarddeR)
+* Optional Windows API bindings now expose `MAGNIFICATION_AVAILABLE`, `BLUETOOTH_AVAILABLE`, and `WINUSB_AVAILABLE`.
+  Their function bindings remain callable and raise `OSError` when the corresponding API is unavailable. (#19537)
+* `audio.SOUND_SPLIT_AVAILABLE` indicates whether Sound Split dependencies loaded successfully.
+  Use `audio.initialize()` and `audio.terminate()` rather than calling through `audio.soundSplit`,
+  which can be `None`.
+  `SoundSplitState` remains available from `audio` without Sound Split dependencies. (#19537)
 
 #### API Breaking Changes
 
