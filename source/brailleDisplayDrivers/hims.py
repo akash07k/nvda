@@ -30,6 +30,7 @@ from winBindings.setupapi import (
 	SetupDiGetDeviceInterfaceDetail,
 	_Dummy as _SP_DEVICE_INTERFACE_DETAIL_DATA_PACKING,
 )
+
 try:
 	from winBindings.winusb import (
 		USB_INTERFACE_DESCRIPTOR,

@@ -17,6 +17,7 @@ from gui.nvdaControls import MessageDialog
 from logHandler import log
 from NVDAHelper.localLib import isScreenFullyBlack
 from NVDAState import _TrackNVDAInitialization
+
 try:
 	from winBindings import magnification
 except (AttributeError, OSError):

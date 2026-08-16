@@ -180,7 +180,9 @@ def _isWindowsLocked_checkViaSessionQuery() -> bool:
 		return False
 	if sessionQueryLockState == WTS_LockState.WTS_SESSIONSTATE_UNKNOWN:
 		logFunc = log.debug if winVersion.isRunningInWinPE() else log.error
-		logFunc(f"Unable to determine lock state via Session Query. Lock state value: {sessionQueryLockState!r}")
+		logFunc(
+			f"Unable to determine lock state via Session Query. Lock state value: {sessionQueryLockState!r}",
+		)
 		return False
 	return sessionQueryLockState == WTS_LockState.WTS_SESSIONSTATE_LOCK
 
