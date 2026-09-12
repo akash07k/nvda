@@ -59,6 +59,14 @@ class TestUnavailableAudioDeviceEnumeration(unittest.TestCase):
 		with mock.patch.object(mmdevice, "AudioUtilities", None):
 			self.assertEqual([], list(mmdevice.getOutputDevices()))
 
+	def test_savingAudioPanelPreservesConfiguredDevice(self):
+		panel = mock.MagicMock()
+		panel._outputDeviceEnumerationAvailable = False
+
+		settingsDialogs.AudioPanel._saveOutputDevice(panel)
+
+		panel.deviceList.GetSelection.assert_not_called()
+
 
 class TestUnavailableSoundSplitSettings(unittest.TestCase):
 	def test_controlsAreDisabledWithExplanation(self):

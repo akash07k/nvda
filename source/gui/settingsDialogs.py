@@ -3662,9 +3662,12 @@ class AudioPanel(SettingsPanel):
 		# Translators: This is the label for the select output device combo in NVDA audio settings.
 		# Examples of an output device are default soundcard, usb headphones, etc.
 		deviceListLabelText = _("Audio output &device:")
+		self._outputDeviceEnumerationAvailable = mmdevice.AudioUtilities is not None
 		self._deviceIds, deviceNames = zip(*mmdevice.getOutputDevices(includeDefault=True))
 		self.deviceList = sHelper.addLabeledControl(deviceListLabelText, wx.Choice, choices=deviceNames)
 		self.bindHelpEvent("SelectSynthesizerOutputDevice", self.deviceList)
+		if not self._outputDeviceEnumerationAvailable:
+			self.deviceList.Disable()
 		selectedOutputDevice = config.conf["audio"]["outputDevice"]
 		if selectedOutputDevice == config.conf.getConfigValidation(("audio", "outputDevice")).default:
 			selection = 0
@@ -3768,7 +3771,9 @@ class AudioPanel(SettingsPanel):
 			),
 		)
 
-	def onSave(self):
+	def _saveOutputDevice(self) -> None:
+		if not self._outputDeviceEnumerationAvailable:
+			return
 		selectedOutputDevice = self._deviceIds[self.deviceList.GetSelection()]
 		if config.conf["audio"]["outputDevice"] != selectedOutputDevice:
 			# Synthesizer must be reload if output device changes
@@ -3783,6 +3788,8 @@ class AudioPanel(SettingsPanel):
 			tones.terminate()
 			tones.initialize()
 
+	def onSave(self):
+		self._saveOutputDevice()
 		config.conf["audio"]["soundVolumeFollowsVoice"] = self.soundVolFollowCheckBox.IsChecked()
 		config.conf["audio"]["soundVolume"] = self.soundVolSlider.GetValue()
 

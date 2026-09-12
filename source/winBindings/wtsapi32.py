@@ -33,13 +33,17 @@ WTSAPI32_AVAILABLE: bool = dll is not None
 """True if the Windows Terminal Services API is available."""
 
 
-def _unavailable(*args: Any, **kwargs: Any) -> None:
-	raise OSError("The Windows Terminal Services API is not available")
+def _makeUnavailable(name: str) -> Any:
+	def unavailable(*args: Any, **kwargs: Any) -> None:
+		raise OSError("The Windows Terminal Services API is not available") from WTSAPI32_LOAD_ERROR
+
+	unavailable.__name__ = name
+	return unavailable
 
 
 def _bind(name: str, prototype: Any) -> Any:
 	if dll is None:
-		return _unavailable
+		return _makeUnavailable(name)
 	return prototype((name, dll))
 
 

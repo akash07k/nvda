@@ -110,17 +110,21 @@ def terminate() -> None:
 
 def initialize() -> None:
 	global _mathCATAvailable
+	try:
+		from .MathCAT import MathCAT
+	except:  # noqa: E722
+		_mathCATAvailable = False
+		log.warning("MathCAT not available.", exc_info=True)
+		return
+	_mathCATAvailable = True
 	# Register builtin providers if a plugin hasn't registered others.
 	if not speechProvider or not brailleProvider or not interactionProvider:
 		try:
-			from .MathCAT import MathCAT
-
 			provider = MathCAT.MathCAT()
 		except:  # noqa: E722
 			_mathCATAvailable = False
 			log.warning("MathCAT not available.", exc_info=True)
 		else:
-			_mathCATAvailable = True
 			MathCAT.MathCATInteraction._createNavScripts()
 			registerProvider(
 				provider,
