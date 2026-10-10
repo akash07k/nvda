@@ -27,6 +27,7 @@ from collections.abc import Generator
 from baseObject import AutoPropertyObject
 from logHandler import log
 from NVDAState import _TrackNVDAInitialization
+from winBindings.wtsapi32 import WTSAPI32_AVAILABLE, WTSAPI32_LOAD_ERROR
 
 from ._wtsApi32 import (
 	WTSINFOEXW,
@@ -171,6 +172,11 @@ def _isWindowsLocked_checkViaSessionQuery() -> bool:
 	@returns: True is the session is locked.
 	Also returns False if the lock state can not be determined via a Session Query.
 	"""
+	if not WTSAPI32_AVAILABLE:
+		_logSessionQueryFailureOnce(
+			f"Windows Terminal Services API is unavailable: {WTSAPI32_LOAD_ERROR}",
+		)
+		return False
 	try:
 		sessionQueryLockState = _getSessionLockedValue()
 	except (OSError, RuntimeError):

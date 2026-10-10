@@ -43,15 +43,22 @@ class TestIsWindowsLockedCheckViaSessionQuery(unittest.TestCase):
 			logError.assert_called_once_with("Failure querying session locked state", exc_info=True)
 
 	def test_unavailableWtsApi_isTreatedAsUnlockedAndLoggedOnce(self):
+		loadError = OSError("missing wtsapi32.dll")
 		with (
 			mock.patch.object(sessionTracking, "_loggedSessionQueryFailures", set()),
-			mock.patch.object(sessionTracking, "_getSessionLockedValue", side_effect=OSError),
+			mock.patch.object(sessionTracking, "WTSAPI32_AVAILABLE", False),
+			mock.patch.object(sessionTracking, "WTSAPI32_LOAD_ERROR", loadError),
+			mock.patch.object(sessionTracking, "_getSessionLockedValue") as getSessionLockedValue,
 			mock.patch.object(sessionTracking.log, "error") as logError,
 		):
 			self.assertFalse(sessionTracking._isWindowsLocked_checkViaSessionQuery())
 			self.assertFalse(sessionTracking._isWindowsLocked_checkViaSessionQuery())
 
-			logError.assert_called_once_with("Failure querying session locked state", exc_info=True)
+			getSessionLockedValue.assert_not_called()
+			logError.assert_called_once_with(
+				f"Windows Terminal Services API is unavailable: {loadError}",
+				exc_info=False,
+			)
 
 	def test_distinctFailuresAreEachLoggedOnce(self):
 		with (
