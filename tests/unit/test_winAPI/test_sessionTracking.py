@@ -42,6 +42,19 @@ class TestIsWindowsLockedCheckViaSessionQuery(unittest.TestCase):
 
 			logError.assert_called_once_with("Failure querying session locked state", exc_info=True)
 
+	def test_unexpectedQueryFailure_isTreatedAsUnlockedAndLoggedOnce(self):
+		with (
+			mock.patch.object(sessionTracking, "_loggedSessionQueryFailures", set()),
+			mock.patch.object(
+				sessionTracking, "_getSessionLockedValue", side_effect=ValueError("invalid WTS data")
+			),
+			mock.patch.object(sessionTracking.log, "error") as logError,
+		):
+			self.assertFalse(sessionTracking._isWindowsLocked_checkViaSessionQuery())
+			self.assertFalse(sessionTracking._isWindowsLocked_checkViaSessionQuery())
+
+			logError.assert_called_once_with("Failure querying session locked state", exc_info=True)
+
 	def test_unavailableWtsApi_isTreatedAsUnlockedAndLoggedOnce(self):
 		loadError = OSError("missing wtsapi32.dll")
 		with (

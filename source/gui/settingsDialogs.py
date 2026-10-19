@@ -3706,8 +3706,7 @@ class AudioPanel(SettingsPanel):
 		self._deviceIds, deviceNames = zip(*mmdevice.getOutputDevices(includeDefault=True))
 		self.deviceList = sHelper.addLabeledControl(deviceListLabelText, wx.Choice, choices=deviceNames)
 		self.bindHelpEvent("SelectSynthesizerOutputDevice", self.deviceList)
-		if not self._outputDeviceEnumerationAvailable:
-			self.deviceList.Disable()
+		self._updateOutputDeviceEnumerationAvailability(sHelper)
 		selectedOutputDevice = config.conf["audio"]["outputDevice"]
 		if selectedOutputDevice == config.conf.getConfigValidation(("audio", "outputDevice")).default:
 			selection = 0
@@ -3811,6 +3810,22 @@ class AudioPanel(SettingsPanel):
 			),
 		)
 
+	def _updateOutputDeviceEnumerationAvailability(
+		self, settingsSizerHelper: guiHelper.BoxSizerHelper
+	) -> None:
+		if self._outputDeviceEnumerationAvailable:
+			return
+		self.deviceList.Disable()
+		settingsSizerHelper.addItem(
+			wx.StaticText(
+				self,
+				# Translators: Explanation shown when audio output device selection cannot be used.
+				label=_(
+					"Audio output device selection is unavailable because required audio components are missing."
+				),
+			),
+		)
+
 	def _saveOutputDevice(self) -> None:
 		if not self._outputDeviceEnumerationAvailable:
 			return
@@ -3858,7 +3873,7 @@ class AudioPanel(SettingsPanel):
 
 	def isValid(self) -> bool:
 		enabledSoundSplitModes = self.soundSplitModesList.CheckedItems
-		if len(enabledSoundSplitModes) < 1:
+		if audio.SOUND_SPLIT_AVAILABLE and len(enabledSoundSplitModes) < 1:
 			log.debugWarning("No sound split modes enabled.")
 			self._validationErrorMessageBox(
 				# Translators: Message shown when no sound split modes are enabled.
@@ -6519,6 +6534,16 @@ class PrivacyAndSecuritySettingsPanel(SettingsPanel):
 		self._screenCurtainEnabledCheckbox.Bind(wx.EVT_CHECKBOX, self._ensureScreenCurtainEnableState)
 		self._screenCurtainEnabledCheckbox.Enable(isScreenCurtainAvailable)
 		self.bindHelpEvent("ScreenCurtainEnable", self._screenCurtainEnabledCheckbox)
+		if not isScreenCurtainAvailable:
+			screenCurtainGroup.addItem(
+				wx.StaticText(
+					self,
+					# Translators: Explanation shown when Screen Curtain cannot be used.
+					label=_(
+						"Screen Curtain is unavailable because the Windows Magnification API could not be initialized."
+					),
+				),
+			)
 
 		self._screenCurtainWarnOnLoadCheckbox = screenCurtainGroup.addItem(
 			wx.CheckBox(

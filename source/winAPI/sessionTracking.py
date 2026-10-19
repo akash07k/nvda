@@ -179,7 +179,7 @@ def _isWindowsLocked_checkViaSessionQuery() -> bool:
 		return False
 	try:
 		sessionQueryLockState = _getSessionLockedValue()
-	except (OSError, RuntimeError):
+	except (OSError, RuntimeError, ValueError, TypeError, ctypes.ArgumentError):
 		_logSessionQueryFailureOnce("Failure querying session locked state", excInfo=True)
 		return False
 	if sessionQueryLockState == WTS_LockState.WTS_SESSIONSTATE_UNKNOWN:

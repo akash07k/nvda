@@ -89,3 +89,30 @@ class TestUnavailableSoundSplitSettings(unittest.TestCase):
 			label="Sound Split is unavailable because required Windows audio components are missing.",
 		)
 		settingsSizerHelper.addItem.assert_called_once_with(unavailableText)
+
+	def test_emptyModeListDoesNotBlockSavingWhenUnavailable(self):
+		panel = mock.MagicMock()
+		panel.__class__ = settingsDialogs.AudioPanel
+		panel.soundSplitModesList.CheckedItems = []
+		with mock.patch.object(settingsDialogs.audio, "SOUND_SPLIT_AVAILABLE", False):
+			self.assertTrue(settingsDialogs.AudioPanel.isValid(panel))
+
+		panel._validationErrorMessageBox.assert_not_called()
+
+	def test_audioDeviceControlIsDisabledWithExplanation(self):
+		panel = mock.MagicMock()
+		panel._outputDeviceEnumerationAvailable = False
+		settingsSizerHelper = mock.MagicMock()
+		unavailableText = mock.sentinel.unavailableText
+		with mock.patch.object(settingsDialogs.wx, "StaticText", return_value=unavailableText) as staticText:
+			settingsDialogs.AudioPanel._updateOutputDeviceEnumerationAvailability(
+				panel,
+				settingsSizerHelper,
+			)
+
+		panel.deviceList.Disable.assert_called_once_with()
+		staticText.assert_called_once_with(
+			panel,
+			label="Audio output device selection is unavailable because required audio components are missing.",
+		)
+		settingsSizerHelper.addItem.assert_called_once_with(unavailableText)
