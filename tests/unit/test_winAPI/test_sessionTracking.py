@@ -46,7 +46,9 @@ class TestIsWindowsLockedCheckViaSessionQuery(unittest.TestCase):
 		with (
 			mock.patch.object(sessionTracking, "_loggedSessionQueryFailures", set()),
 			mock.patch.object(
-				sessionTracking, "_getSessionLockedValue", side_effect=ValueError("invalid WTS data")
+				sessionTracking,
+				"_getSessionLockedValue",
+				side_effect=ValueError("invalid WTS data"),
 			),
 			mock.patch.object(sessionTracking.log, "error") as logError,
 		):

@@ -3811,7 +3811,8 @@ class AudioPanel(SettingsPanel):
 		)
 
 	def _updateOutputDeviceEnumerationAvailability(
-		self, settingsSizerHelper: guiHelper.BoxSizerHelper
+		self,
+		settingsSizerHelper: guiHelper.BoxSizerHelper,
 	) -> None:
 		if self._outputDeviceEnumerationAvailable:
 			return
@@ -3821,7 +3822,7 @@ class AudioPanel(SettingsPanel):
 				self,
 				# Translators: Explanation shown when audio output device selection cannot be used.
 				label=_(
-					"Audio output device selection is unavailable because required audio components are missing."
+					"Audio output device selection is unavailable because required audio components are missing.",
 				),
 			),
 		)
@@ -6540,7 +6541,7 @@ class PrivacyAndSecuritySettingsPanel(SettingsPanel):
 					self,
 					# Translators: Explanation shown when Screen Curtain cannot be used.
 					label=_(
-						"Screen Curtain is unavailable because the Windows Magnification API could not be initialized."
+						"Screen Curtain is unavailable because the Windows Magnification API could not be initialized.",
 					),
 				),
 			)
